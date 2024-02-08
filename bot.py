@@ -2,7 +2,7 @@
 import asyncio
 import os
 import re
-
+import csv
 import discord
 from dotenv import load_dotenv
 
@@ -25,31 +25,38 @@ async def on_ready():
 @client.event
 async def on_message(message):
     if message.content and message.author!=client.user :
-        birthday = message.content.split(' ')[1]
-        match = re.search(r"([0-9]+(-[0-9]+)+)", birthday)
-        if match:
+        print(str(client.user.id) in message.content)
+        text = message.content.split(f'{client.user.id}> ')[1]
+        birthday_match = re.search(r"([0-9]+(-[0-9]+)+)", text)
+        author = message.author.name
+        if '!change_birthday' in text:
+          new_birthday = text.split(' ')[1]
+          write_csv(author, new_birthday)
+        elif birthday_match:
+            birthday_dict = read_csv(message)
             channel = message.channel
-            await channel.send(f'Hello {message.author}! Your birthday has been set to {birthday}. ')
+            if author in birthday_dict:
+                await channel.send(f"Girl, youve already set your birthday! It's {birthday_dict[author]}. If you need to override, type !change_birthday with the new birthday as XX-XX-XXXX.")
+            else:    
+              write_csv(author, text)
+              await channel.send(f'Hello {message.author}! Your birthday has been set to {text}. ')
+        elif text[0] == '$':
+          birthday_dict = read_csv(message)
+          await message.channel.send(
+            f"{author}, your birthday is {birthday_dict[author]}."
+        )
 
-import datetime
-from discord.ext import commands, tasks
-
-utc = datetime.timezone.utc
-
-# If no tzinfo is given then UTC is assumed.
-time = datetime.time(hour=0, minute=0, second=1, tzinfo=utc)
-class MyCog(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
-        self.my_task.start()
-
-    def cog_unload(self):
-        self.my_task.cancel()
-
-    @tasks.loop(time=time)
-    async def my_task(self):
-        print("My task is running!")
-
-
-
+def read_csv(message):
+    with open('bdays.csv', newline='') as csvfile:
+        reader = csv.reader(csvfile, delimiter=' ', quotechar='|')
+        birthday_dict={}
+        for bday in reader:
+            birthday_dict[bday[0]] = bday[1]
+        return birthday_dict
+    
+def write_csv(author, text):
+    with open('bdays.csv', 'w', newline='') as csvfile:
+      writer = csv.writer(csvfile, delimiter=' ',
+                              quotechar='|', quoting=csv.QUOTE_MINIMAL)
+      writer.writerow([author , text])
 client.run(TOKEN)
