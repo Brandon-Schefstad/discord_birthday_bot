@@ -7,59 +7,48 @@ import csv
 import discord
 from datetime import date
 import inspect
-
-
 class birthday_cog(commands.Cog):
-    guild_id = 712797901096747059
-    channel_id = 712797901549731862
+
+    guild_id = os.getenv("GUILD_ID_LEET")
+    channel_id = os.getenv("CHANNEL_ID_LEET")
     def __init__(self, bot) -> None:
         self.bot = bot
         print(self.guild_id)
 
     @commands.Cog.listener()
     async def on_ready(self):
-        self.check.start()
-#         await self.bot.get_guild(self.guild_id).get_channel(
-#             self.channel_id
-#         ).send(
-#             f"""Hey everyone! I am your birthday bot. I accept the following commands:
-
-# `!set_birthday` followed by your birthdate in MM-DD-YYYY format. 
-# `!change_birthday` for if you make a typo.
-
-# We can always add in more commands as we see fit :) 
-
-# This bot is not always online as that would be very expensive! I'll run it locally for a few days so people can set their birthdays. But if you miss that window just dm me and I can add you. After the few days it'll just wake up once a day to see if any of the dates from the csv match. 
-#             """
-#         )
-
+        # self.check.start()
+        pass
+        
     @commands.command()
     async def set_birthday(self, ctx):
-        print(ctx.guild.id)
         (text, author) = self.get_text_and_author(ctx, inspect.stack()[0][3])
         birthday_match = re.search(r"([0-9]+(-[0-9]+)+)", text)
         birthday_dict = self.read_csv()
-        if author in birthday_dict:
+        # If author of message already in csv.
+        if not birthday_match:
+            await ctx.send(f"Incorrect formatting, please try again with MM-DD-YYYY.")
+        elif author in birthday_dict:
             await ctx.send(
-                f"Girl, youve already set your birthday! It's {birthday_dict[author]}. If you need to override, type `!change_birthday` with the new birthday as MM-DD-YYYY."
+                f"You've already set your birthday! It's {birthday_dict[author]}. If you need to override, type `!change_birthday` with the new birthday as MM-DD-YYYY."
             )
         else:
             self.write_csv(author, text)
-            await ctx.send(f"Hello {author}! Your birthday has been set to {text}. ")
+            await ctx.send(f"Hello {author}! Your birthday has been set to {text.lstrip()}. ")
 
-    @tasks.loop(hours=12)
-    async def check(self):
-        ctx = self.bot.get_guild(self.guild_id)
-        birthday_dict = self.read_csv()
-        for person in birthday_dict:
-            if birthday_dict[person][:5] == str(date.today().strftime("%m-%d")):
-                member = discord.utils.find(lambda m: m.name == person, ctx.members)
-                await ctx.get_channel(self.channel_id).send(
-                    f'@everyone'
-                )
-                await ctx.get_channel(self.channel_id).send(
-                    f"Today is <@{member.id}>'s birthday. Be sure to send them some love! "
-                )
+    # @tasks.loop(hours=12)
+    # async def check(self):
+    #     ctx = self.bot.get_guild(self.guild_id)
+    #     birthday_dict = self.read_csv()
+    #     for person in birthday_dict:
+    #         if birthday_dict[person][:5] == str(date.today().strftime("%m-%d")):
+    #             member = discord.utils.find(lambda m: m.name == person, ctx.members)
+    #             await ctx.get_channel(self.channel_id).send(
+    #                 f'@everyone'
+    #             )
+    #             await ctx.get_channel(self.channel_id).send(
+    #                 f"Today is <@{member.id}>'s birthday. Be sure to send them some love! <3"
+    #             )
 
     @commands.command()
     async def change_birthday(self, ctx):
@@ -76,7 +65,7 @@ class birthday_cog(commands.Cog):
             return birthday_dict
 
     def write_csv(self, author, text):
-        with open("tmp/bdays.csv", "w", newline="") as csvfile:
+        with open("tmp/bdays.csv", "a", newline="") as csvfile:
             writer = csv.writer(
                 csvfile, delimiter=" ", quotechar="|", quoting=csv.QUOTE_MINIMAL
             )
