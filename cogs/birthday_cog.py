@@ -8,7 +8,6 @@ import discord
 from datetime import date
 import inspect
 class birthday_cog(commands.Cog):
-
     guild_id = os.getenv("GUILD_ID_LEET")
     channel_id = os.getenv("CHANNEL_ID_LEET")
     def __init__(self, bot) -> None:
@@ -17,8 +16,7 @@ class birthday_cog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        # self.check.start()
-        pass
+        self.check.start()
         
     @commands.command()
     async def set_birthday(self, ctx):
@@ -36,25 +34,21 @@ class birthday_cog(commands.Cog):
             self.write_csv(author, text)
             await ctx.send(f"Hello {author}! Your birthday has been set to {text.lstrip()}. ")
 
-    # @tasks.loop(hours=12)
-    # async def check(self):
-    #     ctx = self.bot.get_guild(self.guild_id)
-    #     birthday_dict = self.read_csv()
-    #     for person in birthday_dict:
-    #         if birthday_dict[person][:5] == str(date.today().strftime("%m-%d")):
-    #             member = discord.utils.find(lambda m: m.name == person, ctx.members)
-    #             await ctx.get_channel(self.channel_id).send(
-    #                 f'@everyone'
-    #             )
-    #             await ctx.get_channel(self.channel_id).send(
-    #                 f"Today is <@{member.id}>'s birthday. Be sure to send them some love! <3"
-    #             )
-
-    @commands.command()
-    async def change_birthday(self, ctx):
-        (text, author) = self.get_text_and_author(ctx, "change_birthday")
-        self.write_csv(author, text)
-        await ctx.send(f"Your birthday has been updated to {text.lstrip()}")
+    @tasks.loop(hours=12)
+    async def check(self):
+        ctx = self.bot.get_guild(self.guild_id)
+        birthday_dict = self.read_csv()
+        for person in birthday_dict:
+            if birthday_dict[person][:5] == str(date.today().strftime("%m-%d")):
+                member = discord.utils.find(lambda m: m.name == person, ctx.members)
+                await ctx.get_channel(self.channel_id).send(
+                    f'@everyone'
+                )
+                await ctx.get_channel(self.channel_id).send(
+                    f"Today is <@{member.id}>'s birthday. Be sure to send them some love! <3"
+                )
+        print('wahoo')
+        await self.bot.close()
 
     def read_csv(self):
         with open("tmp/bdays.csv", newline="") as csvfile:
@@ -75,7 +69,6 @@ class birthday_cog(commands.Cog):
         text = ctx.message.content.split(command_name)[1]
         author = ctx.message.author.name
         return (text, author)
-
 
 async def setup(bot):
     await bot.add_cog(birthday_cog(bot))

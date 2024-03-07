@@ -7,8 +7,6 @@ import discord
 from dotenv import load_dotenv
 from discord.ext import commands
 from cogs.birthday_cog import birthday_cog
-from cogs.info_cog import info_cog
-
 
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
@@ -23,13 +21,14 @@ bot = commands.Bot(intents=intents, command_prefix="!")
 
 @bot.event
 async def on_ready():
-    print("This bot is running!")
+  pass
 
 
-async def startcogs():
-    await bot.load_extension("cogs.birthday_cog")
-    await bot.load_extension("cogs.info_cog")
+async def main():
+  async with bot:
+     await bot.load_extension("cogs.birthday_cog")
+     await bot.start(TOKEN)
 
+ 
 
-asyncio.run(startcogs())
-bot.run(TOKEN)
+asyncio.run(main())
