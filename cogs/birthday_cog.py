@@ -5,7 +5,7 @@ import os
 import re
 import csv
 import discord
-from datetime import date
+from datetime import date, datetime
 import inspect
 
 
@@ -41,19 +41,17 @@ class birthday_cog(commands.Cog):
 
     @tasks.loop(hours=12)
     async def check(self):
-      ctx = self.bot.guilds[1]
-      birthday_dict = self.read_csv()
-      for person in birthday_dict:
-          if birthday_dict[person][:5] == str(date.today().strftime("%m-%d")):
-              age = self.get_age(birthday_dict[person])
-              member = discord.utils.find(lambda m: m.name == person, ctx.members)
-              await ctx.get_channel(self.channel_id).send(
-                  f'@everyone'
-              )
-              await ctx.get_channel(self.channel_id).send(
-                f"Today is <@{member.id}>'s {age} birthday. Be sure to send them some love! <3"
-              )
-      await self.bot.close()
+        ctx = self.bot.guilds[1]
+        birthday_dict = self.read_csv()
+        for person in birthday_dict:
+            if birthday_dict[person][:5] == str(date.today().strftime("%m-%d")):
+                age = self.get_age(birthday_dict[person])
+                member = discord.utils.find(lambda m: m.name == person, ctx.members)
+                await ctx.get_channel(self.channel_id).send(f"@everyone")
+                await ctx.get_channel(self.channel_id).send(
+                    f"Today is <@{member.id}>'s {age} birthday. Be sure to send them some love! <3"
+                )
+        await self.bot.close()
 
     def read_csv(self):
         with open("tmp/bdays.csv", newline="") as csvfile:
