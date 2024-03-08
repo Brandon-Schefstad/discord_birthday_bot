@@ -7,9 +7,12 @@ import csv
 import discord
 from datetime import date
 import inspect
+
+
 class birthday_cog(commands.Cog):
     guild_id = os.getenv("GUILD_ID_LEET")
     channel_id = os.getenv("CHANNEL_ID_LEET")
+
     def __init__(self, bot) -> None:
         self.bot = bot
 
@@ -17,7 +20,7 @@ class birthday_cog(commands.Cog):
     async def on_ready(self):
         # self.check.start()
         pass
-        
+
     @commands.command()
     async def set_birthday(self, ctx):
         (text, author) = self.get_text_and_author(ctx, inspect.stack()[0][3])
@@ -32,7 +35,9 @@ class birthday_cog(commands.Cog):
             )
         else:
             self.write_csv(author, text)
-            await ctx.send(f"Hello {author}! Your birthday has been set to {text.lstrip()}. ")
+            await ctx.send(
+                f"Hello {author}! Your birthday has been set to {text.lstrip()}. "
+            )
 
     @tasks.loop(hours=12)
     async def check(self):
@@ -49,7 +54,6 @@ class birthday_cog(commands.Cog):
                 f"Today is <@{member.id}>'s {age} birthday. Be sure to send them some love! <3"
               )
       await self.bot.close()
-
 
     def read_csv(self):
         with open("tmp/bdays.csv", newline="") as csvfile:

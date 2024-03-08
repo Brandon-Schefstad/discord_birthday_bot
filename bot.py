@@ -21,13 +21,13 @@ bot = commands.Bot(intents=intents, command_prefix="!")
 
 @bot.event
 async def on_ready():
-  pass
+    pass
 
 
 async def main():
-  async with bot:
-    await bot.load_extension("cogs.birthday_cog")
-    await bot.start(TOKEN)
-  
-asyncio.run(main())
+    async with bot:
+        await bot.load_extension("cogs.birthday_cog")
+        await bot.start(TOKEN)
 
+
+asyncio.run(main())
