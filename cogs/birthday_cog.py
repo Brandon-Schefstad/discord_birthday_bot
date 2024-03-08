@@ -7,9 +7,12 @@ import csv
 import discord
 from datetime import date
 import inspect
+
+
 class birthday_cog(commands.Cog):
     guild_id = os.getenv("GUILD_ID_LEET")
     channel_id = os.getenv("CHANNEL_ID_LEET")
+
     def __init__(self, bot) -> None:
         self.bot = bot
 
@@ -17,7 +20,7 @@ class birthday_cog(commands.Cog):
     async def on_ready(self):
         # self.check.start()
         pass
-        
+
     @commands.command()
     async def set_birthday(self, ctx):
         (text, author) = self.get_text_and_author(ctx, inspect.stack()[0][3])
@@ -32,23 +35,22 @@ class birthday_cog(commands.Cog):
             )
         else:
             self.write_csv(author, text)
-            await ctx.send(f"Hello {author}! Your birthday has been set to {text.lstrip()}. ")
+            await ctx.send(
+                f"Hello {author}! Your birthday has been set to {text.lstrip()}. "
+            )
 
     @tasks.loop(hours=12)
     async def check(self):
-      ctx = self.bot.guilds[1]
-      birthday_dict = self.read_csv()
-      for person in birthday_dict:
-          if birthday_dict[person][:5] == str(date.today().strftime("%m-%d")):
-              member = discord.utils.find(lambda m: m.name == person, ctx.members)
-              await ctx.get_channel(self.channel_id).send(
-                  f'@everyone'
-              )
-              await ctx.get_channel(self.channel_id).send(
-                  f"Today is <@{member.id}>'s birthday. Be sure to send them some love! <3"
-              )
-      await self.bot.close()
-
+        ctx = self.bot.guilds[1]
+        birthday_dict = self.read_csv()
+        for person in birthday_dict:
+            if birthday_dict[person][:5] == str(date.today().strftime("%m-%d")):
+                member = discord.utils.find(lambda m: m.name == person, ctx.members)
+                await ctx.get_channel(self.channel_id).send(f"@everyone")
+                await ctx.get_channel(self.channel_id).send(
+                    f"Today is <@{member.id}>'s birthday. Be sure to send them some love! <3"
+                )
+        await self.bot.close()
 
     def read_csv(self):
         with open("tmp/bdays.csv", newline="") as csvfile:
@@ -69,6 +71,7 @@ class birthday_cog(commands.Cog):
         text = ctx.message.content.split(command_name)[1]
         author = ctx.message.author.name
         return (text, author)
+
 
 async def setup(bot):
     await bot.add_cog(birthday_cog(bot))
