@@ -5,7 +5,7 @@ import os
 import re
 import csv
 import discord
-from datetime import date
+from datetime import date, datetime
 import inspect
 
 
@@ -45,10 +45,11 @@ class birthday_cog(commands.Cog):
         birthday_dict = self.read_csv()
         for person in birthday_dict:
             if birthday_dict[person][:5] == str(date.today().strftime("%m-%d")):
+                age = self.get_age(birthday_dict[person])
                 member = discord.utils.find(lambda m: m.name == person, ctx.members)
                 await ctx.get_channel(self.channel_id).send(f"@everyone")
                 await ctx.get_channel(self.channel_id).send(
-                    f"Today is <@{member.id}>'s birthday. Be sure to send them some love! <3"
+                    f"Today is <@{member.id}>'s {age} birthday. Be sure to send them some love! <3"
                 )
         await self.bot.close()
 
@@ -71,6 +72,25 @@ class birthday_cog(commands.Cog):
         text = ctx.message.content.split(command_name)[1]
         author = ctx.message.author.name
         return (text, author)
+
+    def get_age(self, birthday: str, today=date.today()):
+        """
+        calculates ordinal ages from birthdays, assuming birthday has already
+        passed
+        `get_age("12-02-2000")` returns `"24th"` when run in 2024
+        """
+        birthday = datetime.strptime(birthday, "%m-%d-%Y")
+        age = today.year - birthday.year
+        return "".join(
+            [
+                str(age),
+                (
+                    ["th", "st", "nd", "rd", "th"][min(age % 10, 4)]
+                    if not 11 <= (age % 100) <= 13
+                    else "th"
+                ),
+            ]
+        )
 
 
 async def setup(bot):
