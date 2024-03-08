@@ -26,9 +26,8 @@ async def on_ready():
 
 async def main():
   async with bot:
-     await bot.load_extension("cogs.birthday_cog")
-     await bot.start(TOKEN)
-
- 
-
+    await bot.load_extension("cogs.birthday_cog")
+    await bot.start(TOKEN)
+  
 asyncio.run(main())
+

@@ -12,11 +12,11 @@ class birthday_cog(commands.Cog):
     channel_id = os.getenv("CHANNEL_ID_LEET")
     def __init__(self, bot) -> None:
         self.bot = bot
-        print(self.guild_id)
 
     @commands.Cog.listener()
     async def on_ready(self):
-        self.check.start()
+        # self.check.start()
+        pass
         
     @commands.command()
     async def set_birthday(self, ctx):
@@ -36,19 +36,19 @@ class birthday_cog(commands.Cog):
 
     @tasks.loop(hours=12)
     async def check(self):
-        ctx = self.bot.get_guild(self.guild_id)
-        birthday_dict = self.read_csv()
-        for person in birthday_dict:
-            if birthday_dict[person][:5] == str(date.today().strftime("%m-%d")):
-                member = discord.utils.find(lambda m: m.name == person, ctx.members)
-                await ctx.get_channel(self.channel_id).send(
-                    f'@everyone'
-                )
-                await ctx.get_channel(self.channel_id).send(
-                    f"Today is <@{member.id}>'s birthday. Be sure to send them some love! <3"
-                )
-        print('wahoo')
-        await self.bot.close()
+      ctx = self.bot.guilds[1]
+      birthday_dict = self.read_csv()
+      for person in birthday_dict:
+          if birthday_dict[person][:5] == str(date.today().strftime("%m-%d")):
+              member = discord.utils.find(lambda m: m.name == person, ctx.members)
+              await ctx.get_channel(self.channel_id).send(
+                  f'@everyone'
+              )
+              await ctx.get_channel(self.channel_id).send(
+                  f"Today is <@{member.id}>'s birthday. Be sure to send them some love! <3"
+              )
+      await self.bot.close()
+
 
     def read_csv(self):
         with open("tmp/bdays.csv", newline="") as csvfile:
